@@ -1,3 +1,4 @@
+const API_URL = 'https://cmppl-staging-backend.onrender.com';
 document.addEventListener('DOMContentLoaded', async () => {
     const checkSession = async () => {
       try {
@@ -44,3 +45,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   
     await checkSession();
   });
+
+// Example function to fetch certificates
+async function fetchCertificates() {
+    const response = await fetch(`${API_URL}/certificate`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.json();
+}

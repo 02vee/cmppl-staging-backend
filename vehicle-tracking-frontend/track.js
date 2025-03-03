@@ -1,3 +1,4 @@
+const API_URL = 'https://cmppl-staging-backend.onrender.com';
 let socket;
 let map;
 let markers = {};
@@ -206,3 +207,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+// Example function to track a vehicle
+async function trackVehicle(vehicleId) {
+    const response = await fetch(`${API_URL}/vehicle/${vehicleId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.json();
+}

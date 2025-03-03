@@ -1,3 +1,4 @@
+const API_URL = 'https://cmppl-staging-backend.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
     // Check if the user is authenticated
     fetch('http://localhost:5000/api/auth/check-session', { method: 'GET', credentials: 'include' })
@@ -20,3 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Attach logout function to the logout link
     document.querySelector('a[onclick="logout()"]').addEventListener('click', logout);
 });
+async function fetchAdminData() {
+    const response = await fetch(`${API_URL}/admin/data`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.json();
+}

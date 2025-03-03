@@ -1,3 +1,5 @@
+const API_URL = 'https://cmppl-staging-backend.onrender.com';
+
 let socket;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -145,3 +147,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 });
+// Example function to log in
+async function loginUser(credentials) {
+  const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+  });
+  return response.json();
+}
+
+// Example function to track a vehicle
+async function trackVehicle(vehicleId) {
+  const response = await fetch(`${API_URL}/vehicle/${vehicleId}`, {
+      method: 'GET',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+  });
+  return response.json();
+}
