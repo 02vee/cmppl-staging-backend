@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <script src="https://cmppl-staging-backend.onrender.com/socket.io/socket.io.js"></script>
 </head>
 <body>
     <header>
@@ -28,7 +28,7 @@
 
     <script>
         // Check if the user is authenticated
-        fetch('http://localhost:5000/api/auth/check-session', { method: 'GET', credentials: 'include' })
+        fetch('https://cmppl-staging-backend.onrender.com/api/auth/check-session', { method: 'GET', credentials: 'include' })
             .then(response => response.json())
             .then(data => {
                 if (!data.isAuthenticated) {
@@ -41,7 +41,7 @@
 
         // Logout functionality
         function logout() {
-            fetch('http://localhost:5000/api/auth/logout', { method: 'GET', credentials: 'include' })
+            fetch('https://cmppl-staging-backend.onrender.com/api/auth/logout', { method: 'GET', credentials: 'include' })
                 .then(response => window.location.href = '/login.html');
         }
     </script>

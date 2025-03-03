@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // --- CORS Setup ---
 app.use(cors({
   credentials: true,
-  origin: "http://localhost:3000",  // Frontend URL
+  origin: "https://02vee.github.io",  // Frontend URL
 }));
 
 // --- MongoDB Atlas Connection ---
@@ -48,7 +48,7 @@ app.use(sessionMiddleware);
 // --- Initialize Socket.IO ---
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",  // Frontend URL
+    origin: "https://02vee.github.io",  // Frontend URL
     methods: ["GET", "POST"],
     credentials: true,               // Allow credentials (cookies)
   },

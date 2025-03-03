@@ -1,7 +1,7 @@
 const API_URL = 'https://cmppl-staging-backend.onrender.com';
 document.addEventListener('DOMContentLoaded', () => {
     // Check if the user is authenticated
-    fetch('http://localhost:5000/api/auth/check-session', { method: 'GET', credentials: 'include' })
+    fetch(`${API_URL}/api/auth/check-session`, { method: 'GET', credentials: 'include' })
         .then(response => response.json())
         .then(data => {
             if (!data.isAuthenticated) {
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout functionality
     function logout() {
-        fetch('http://localhost:5000/api/auth/logout', { method: 'GET', credentials: 'include' })
+        fetch(`${API_URL}/api/auth/logout`, { method: 'GET', credentials: 'include' })
             .then(response => window.location.href = '/login.html');
     }
 

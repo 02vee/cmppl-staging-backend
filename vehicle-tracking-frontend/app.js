@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const initializeSocket = () => {
     if (!socket) {
       console.log('Initializing socket connection');
-      socket = io('http://localhost:5000', {
+      socket = io(API_URL, {
         withCredentials: true,  // Important for session handling
         reconnectionAttempts: 5,  // Limit reconnection attempts
         transports: ['websocket']  // Force WebSocket over polling
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (window.location.pathname === '/admin.html') {
     console.log('Checking session on Admin page');
     try {
-      const response = await fetch('http://localhost:5000/api/auth/check-session', {
+      const response = await fetch(`${API_URL}/api/auth/check-session`, {
         method: 'GET',
         credentials: 'include',  // Include credentials in request
       });
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
           console.log('Sending login request:', { username, password });
 
-          const response = await fetch('http://localhost:5000/api/auth/login', {
+          const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Basic validation
       if (vehicleNumber) {
         // Call the backend to start tracking the vehicle
-        fetch(`http://localhost:5000/api/vehicle/track/${vehicleNumber}`, {
+        fetch(`${API_URL}/api/vehicle/track/${vehicleNumber}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -147,25 +147,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 });
-// Example function to log in
-async function loginUser(credentials) {
-  const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(credentials),
-  });
-  return response.json();
-}
-
-// Example function to track a vehicle
-async function trackVehicle(vehicleId) {
-  const response = await fetch(`${API_URL}/vehicle/${vehicleId}`, {
-      method: 'GET',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-  });
-  return response.json();
-}

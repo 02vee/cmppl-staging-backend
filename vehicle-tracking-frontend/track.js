@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const initializeSocket = () => {
     if (!socket) {
       console.log('Initializing socket connection');
-      socket = io('http://localhost:5000', {
+      socket = io(API_URL, {
         withCredentials: true,  // Important for session handling
         reconnectionAttempts: 5,  // Limit reconnection attempts
         transports: ['websocket']  // Force WebSocket over polling
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/vehicle/calculate-eta?startLat=${currentLat}&startLng=${currentLng}&endLat=${deliveryLat}&endLng=${deliveryLng}`);
+      const response = await fetch(`${API_URL}/api/vehicle/calculate-eta?startLat=${currentLat}&startLng=${currentLng}&endLat=${deliveryLat}&endLng=${deliveryLng}`);
       const data = await response.json();
       const durationMinutes = Math.round(data.eta);
 
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (vehicleNumber) {
       try {
-        const response = await fetch(`http://localhost:5000/api/vehicle/track/${vehicleNumber}`, {
+        const response = await fetch(`${API_URL}/api/vehicle/track/${vehicleNumber}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -207,14 +207,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
-
-// Example function to track a vehicle
-async function trackVehicle(vehicleId) {
-    const response = await fetch(`${API_URL}/vehicle/${vehicleId}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-    return response.json();
-}

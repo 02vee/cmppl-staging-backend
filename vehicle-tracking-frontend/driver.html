@@ -92,7 +92,7 @@
         }
 
         function sendLocation(vehicleId, lat, lng, locationName, deliveryLocation, deliveryLocationName) {
-            axios.post("http://localhost:5000/api/vehicle/update-location", {
+            axios.post(`${API_URL}/api/vehicle/update-location`, {
                 vehicleId,
                 lat,
                 lng,
