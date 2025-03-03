@@ -7,20 +7,6 @@ let trackedVehicles = {};
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Track.js loaded successfully');
 
-  // Request location access as soon as the page loads
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('Location access granted');
-      },
-      (error) => {
-        console.error('Location access denied', error);
-      }
-    );
-  } else {
-    console.error('Geolocation is not supported by this browser');
-  }
-
   const initializeSocket = () => {
     if (!socket) {
       console.log('Initializing socket connection');
@@ -71,18 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return; // Ignore updates for vehicles not being tracked
     }
 
-    let marker = markers[vehicleId];
-
-    if (!marker) {
-      marker = L.marker([lat, lng]).addTo(map)
-        .bindPopup(`Vehicle ${vehicleId} - ${locationName}`)
-        .openPopup();
-      markers[vehicleId] = marker;
-    } else {
-      marker.setLatLng([lat, lng])
-        .setPopupContent(`Vehicle ${vehicleId} - ${locationName}`)
-        .openPopup();
+    if (markers[vehicleId]) {
+      map.removeLayer(markers[vehicleId]); // Remove old marker if it exists
     }
+
+    const marker = L.marker([lat, lng]).addTo(map)
+      .bindPopup(`Vehicle ${vehicleId} - ${locationName}`)
+      .openPopup();
+    markers[vehicleId] = marker;
 
     const vehicleList = document.getElementById('tracked-vehicles');
     let vehicleItem = document.getElementById(`vehicle-${vehicleId}`);
@@ -101,7 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const calculateETA = async (currentLat, currentLng, deliveryLocation, etaElement) => {
-    // Convert the delivery location into lat, lng
     const deliveryCoords = deliveryLocation.split(',').map(coord => parseFloat(coord.trim()));
     const [deliveryLat, deliveryLng] = deliveryCoords;
 
@@ -115,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       const durationMinutes = Math.round(data.eta);
 
-      // Convert duration to days, hours, and minutes
       const days = Math.floor(durationMinutes / (24 * 60));
       const hours = Math.floor((durationMinutes % (24 * 60)) / 60);
       const minutes = durationMinutes % 60;
@@ -177,17 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await response.json();
 
-        // Clear the input field and set the placeholder
         document.getElementById('vehicle-number').value = '';
         document.getElementById('vehicle-number').placeholder = 'Enter any vehicle number';
 
         if (response.status === 404) {
-          // Display specific error message if vehicle is not found
           alert('Vehicle not found. Please enter a correct number.');
         } else if (data.message === 'Tracking started') {
           trackedVehicles[vehicleNumber] = true;
           console.log(`Tracking started for vehicle ${vehicleNumber}`);
-          // Manually trigger a vehicle update to ensure the UI is updated immediately
           updateVehicleLocation({
             vehicleId: vehicleNumber,
             lat: data.lat,
