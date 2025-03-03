@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driver Location Update</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Driver Location Update</h1>
+    </header>
+
+    <section id="driver-page">
+        <h2>Track Your Vehicle</h2>
+        <input type="text" id="vehicleId" placeholder="e.g MH03T1234">
+        <input type="text" id="deliveryLocation" placeholder="Enter delivery address">
+        <button onclick="startTracking()">Start Tracking</button>
+        <button onclick="stopTracking()">Stop Tracking</button>
+        <p id="status"></p>
+        <p id="location"></p> <!-- Display the location here -->
+    </section>
+
+    <script>
+        let watchId;
+
+        function startTracking() {
+            const vehicleId = document.getElementById("vehicleId").value;
+            const deliveryLocation = document.getElementById("deliveryLocation").value;
+            if (!vehicleId || !deliveryLocation) {
+                alert("Please enter your vehicle number plate and delivery address.");
+                return;
+            }
+
+            document.getElementById("status").innerText = "Tracking started...";
+
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        getLocationName(latitude, longitude, vehicleId, deliveryLocation);
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        document.getElementById("status").innerText = "Location access denied!";
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0,
+                        timeout: 5000
+                    }
+                );
+            } else {
+                console.error('Geolocation is not supported by this browser');
+                document.getElementById("status").innerText = "Geolocation is not supported by this browser!";
+            }
+        }
+
+        function getLocationName(lat, lng, vehicleId, deliveryLocation) {
+            // Fetch location name using reverse geocoding API
+            axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => {
+                    const locationName = response.data.address.city || response.data.address.town || response.data.address.village || "Unknown Location";
+                    document.getElementById("location").innerText = `Vehicle is in ${locationName}`;
+                    geocodeDeliveryLocation(vehicleId, lat, lng, locationName, deliveryLocation);
+                })
+                .catch(error => {
+                    console.error("Error getting location name:", error);
+                    document.getElementById("status").innerText = "Error fetching location name!";
+                });
+        }
+
+        function geocodeDeliveryLocation(vehicleId, lat, lng, locationName, deliveryLocation) {
+            // Use Nominatim API to convert the delivery address to latitude and longitude
+            axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${deliveryLocation}`)
+                .then(response => {
+                    if (response.data.length > 0) {
+                        const deliveryLat = response.data[0].lat;
+                        const deliveryLng = response.data[0].lon;
+                        const deliveryLocationName = response.data[0].display_name;
+                        sendLocation(vehicleId, lat, lng, locationName, `${deliveryLat},${deliveryLng}`, deliveryLocationName);
+                    } else {
+                        document.getElementById("status").innerText = "Delivery location not found!";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error geocoding delivery location:", error);
+                    document.getElementById("status").innerText = "Error geocoding delivery location!";
+                });
+        }
+
+        function sendLocation(vehicleId, lat, lng, locationName, deliveryLocation, deliveryLocationName) {
+            axios.post("http://localhost:5000/api/vehicle/update-location", {
+                vehicleId,
+                lat,
+                lng,
+                locationName,
+                deliveryLocation,
+                deliveryLocationName,
+                tracking: true  // Send the tracking value as true
+            })
+            .then(response => {
+                console.log("Location updated successfully:", response.data);
+            })
+            .catch(error => {
+                console.error("Error updating location:", error);
+            });
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            document.getElementById("status").innerText = "Tracking stopped.";
+        }
+    </script>
+
+</body>
+</html>

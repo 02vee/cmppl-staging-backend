@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="track.html">Track a Vehicle</a></li>
+                <li><a href="certificates.html">Get Certificates</a></li>
+                <li><a href="index.html" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <h2>Welcome to the Admin Dashboard</h2>
+        <p>Select an option from the menu above.</p>
+    </main>
+    <footer>
+        <p>&copy; 2025 ALCCOFINE</p>
+    </footer>
+
+    <script>
+        // Check if the user is authenticated
+        fetch('http://localhost:5000/api/auth/check-session', { method: 'GET', credentials: 'include' })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.isAuthenticated) {
+                    window.location.href = '/login.html'; // Redirect to login page if not authenticated
+                }
+            })
+            .catch(() => {
+                window.location.href = '/login.html'; // Redirect if error in checking session
+            });
+
+        // Logout functionality
+        function logout() {
+            fetch('http://localhost:5000/api/auth/logout', { method: 'GET', credentials: 'include' })
+                .then(response => window.location.href = '/login.html');
+        }
+    </script>
+</body>
+</html>

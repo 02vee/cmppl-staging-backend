@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Vehicles</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Track Vehicles</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <form id="track-form">
+            <label for="vehicle-number">Enter Vehicle Number:</label>
+            <input type="text" id="vehicle-number" name="vehicle-number" placeholder="Enter any vehicle number" required>
+            <button type="submit">Track</button>
+        </form>
+        <ul id="tracked-vehicles"></ul>
+        <div id="map" style="height: 500px; width: 100%;"></div>
+    </main>
+    <footer>
+        <p>&copy; 2025 ALCCOFINE</p>
+    </footer>
+    <script src="track.js"></script>
+</body>
+</html>
