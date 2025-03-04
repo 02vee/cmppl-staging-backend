@@ -58,13 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (markers[vehicleId]) {
-      map.removeLayer(markers[vehicleId]); // Remove old marker if it exists
+      // Update the existing marker position and popup content
+      markers[vehicleId].setLatLng([lat, lng])
+        .setPopupContent(`Vehicle ${vehicleId} - ${locationName}`)
+        .openPopup();
+    } else {
+      // Create a new marker for the vehicle
+      const marker = L.marker([lat, lng]).addTo(map)
+        .bindPopup(`Vehicle ${vehicleId} - ${locationName}`)
+        .openPopup();
+      markers[vehicleId] = marker;
     }
-
-    const marker = L.marker([lat, lng]).addTo(map)
-      .bindPopup(`Vehicle ${vehicleId} - ${locationName}`)
-      .openPopup();
-    markers[vehicleId] = marker;
 
     const vehicleList = document.getElementById('tracked-vehicles');
     let vehicleItem = document.getElementById(`vehicle-${vehicleId}`);
