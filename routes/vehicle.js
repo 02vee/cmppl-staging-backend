@@ -118,10 +118,7 @@ router.get("/calculate-eta", async (req, res) => {
     res.status(200).json({ eta: duration / 60 }); // Convert to minutes
   } catch (err) {
     console.error("Error calculating ETA:", err);
-    res.status(500).json ({
-      message: "Server error",
-      error: err.message,
-    });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
