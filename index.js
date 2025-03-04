@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // --- CORS Setup ---
 app.use(cors({
   credentials: true,
-  origin: "https://cmppl-staging.onrender.com",  // Frontend URL
+  origin: "https://cmppl-staging-backend.onrender.com",  // Frontend URL
 }));
 
 // --- MongoDB Atlas Connection ---
@@ -48,7 +48,7 @@ app.use(sessionMiddleware);
 // --- Initialize Socket.IO ---
 const io = socketIo(server, {
   cors: {
-    origin: "https://cmppl-staging.onrender.com",  // Frontend URL
+    origin: "https://cmppl-staging-backend.onrender.com",  // Frontend URL
     methods: ["GET", "POST"],
     credentials: true,               // Allow credentials (cookies)
   },
