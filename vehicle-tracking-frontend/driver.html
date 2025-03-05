@@ -9,6 +9,8 @@
     <script>
         const API_URL = 'https://cmppl-staging-backend.onrender.com';
 
+        let watchId;
+
         function startTracking() {
             const vehicleId = document.getElementById("vehicleId").value;
             const deliveryLocation = document.getElementById("deliveryLocation").value;
@@ -20,7 +22,7 @@
             document.getElementById("status").innerText = "Tracking started...";
 
             if (navigator.geolocation) {
-                navigator.geolocation.watchPosition(
+                watchId = navigator.geolocation.watchPosition(
                     (position) => {
                         const { latitude, longitude } = position.coords;
                         getLocationName(latitude, longitude, vehicleId, deliveryLocation);
