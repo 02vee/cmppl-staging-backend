@@ -1,3 +1,5 @@
+const API_URL = 'https://cmppl-staging-backend.onrender.com';
+
 // Check if the browser supports service workers
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/service-worker.js')
@@ -64,15 +66,33 @@ function startBackgroundLocationTracking() {
       },
       (error) => {
         console.error('Error getting location:', error);
+        handleLocationError(error);
       },
       {
         enableHighAccuracy: true,
         maximumAge: 10000,
-        timeout: 5000,
+        timeout: 20000, // Increased timeout to 20 seconds
       }
     );
   } else {
     console.error('Geolocation is not supported by this browser.');
+  }
+}
+
+function handleLocationError(error) {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      alert('User denied the request for Geolocation.');
+      break;
+    case error.POSITION_UNAVAILABLE:
+      alert('Location information is unavailable.');
+      break;
+    case error.TIMEOUT:
+      alert('The request to get user location timed out.');
+      break;
+    case error.UNKNOWN_ERROR:
+      alert('An unknown error occurred.');
+      break;
   }
 }
 
