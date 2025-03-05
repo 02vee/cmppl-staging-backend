@@ -1,4 +1,5 @@
 const API_URL = 'https://cmppl-staging-backend.onrender.com';
+let lastSyncedTimestamp = 0;
 
 // Check if the browser supports service workers
 if ('serviceWorker' in navigator) {
@@ -60,8 +61,9 @@ function startBackgroundLocationTracking() {
         storeLocationLocally(location);
 
         // Sync locations with the server if online
-        if (navigator.onLine) {
+        if (navigator.onLine && Date.now() - lastSyncedTimestamp > 60000) { // Sync every 60 seconds
           syncLocations();
+          lastSyncedTimestamp = Date.now();
         }
       },
       (error) => {
