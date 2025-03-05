@@ -7,35 +7,39 @@ const axios = require('axios');
 router.post("/update-location", async (req, res) => {
   console.log(`[${new Date().toISOString()}] Received Data:`, req.body);
 
-  const { vehicleId, lat, lng, tracking, locationName, deliveryLocation, deliveryLocationName } = req.body;
-  const io = req.app.get("io"); // Get io from app instance
+  const locations = req.body;
 
-  if (!vehicleId || lat == null || lng == null || tracking == null || !locationName || !deliveryLocation || !deliveryLocationName) {
-    return res.status(400).json({ message: "Missing required fields" });
+  if (!Array.isArray(locations) || locations.length === 0) {
+    return res.status(400).json({ message: "Invalid location data" });
   }
 
   try {
-    let vehicle = await Vehicle.findOne({ vehicleId });
+    for (const location of locations) {
+      const { vehicleId, lat, lng, tracking, locationName, deliveryLocation, deliveryLocationName, timestamp } = location;
 
-    if (!vehicle) {
-      vehicle = new Vehicle({ vehicleId, location: { lat, lng }, tracking, locationName, deliveryLocation, deliveryLocationName });
-    } else {
-      vehicle.location = { lat, lng };
-      vehicle.tracking = tracking;
-      vehicle.locationName = locationName; // Update location name
-      vehicle.deliveryLocation = deliveryLocation; // Update delivery location
-      vehicle.deliveryLocationName = deliveryLocationName; // Update delivery location name
+      let vehicle = await Vehicle.findOne({ vehicleId });
+
+      if (!vehicle) {
+        vehicle = new Vehicle({ vehicleId, location: { lat, lng }, tracking, locationName, deliveryLocation, deliveryLocationName });
+      } else {
+        vehicle.location = { lat, lng };
+        vehicle.tracking = tracking;
+        vehicle.locationName = locationName; // Update location name
+        vehicle.deliveryLocation = deliveryLocation; // Update delivery location
+        vehicle.deliveryLocationName = deliveryLocationName; // Update delivery location name
+      }
+
+      await vehicle.save();
+
+      // Emit location update to WebSocket clients
+      const io = req.app.get("io"); // Get io from app instance
+      io.emit("vehicleLocationUpdate", { vehicleId, lat, lng, locationName, deliveryLocationName, deliveryLocation, timestamp });
+      console.log("Emitting vehicleLocationUpdate event");
     }
 
-    await vehicle.save();
-
-    // Emit location update to WebSocket clients
-    io.emit("vehicleLocationUpdate", { vehicleId, lat, lng, locationName, deliveryLocationName, deliveryLocation });
-    console.log("Emitting vehicleLocationUpdate event");
-
-    res.status(200).json({ message: "Location updated successfully" });
+    res.status(200).json({ message: "Locations updated successfully" });
   } catch (err) {
-    console.error("Error updating location:", err);
+    console.error("Error updating locations:", err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
