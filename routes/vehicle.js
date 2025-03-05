@@ -9,13 +9,17 @@ router.post("/update-location", async (req, res) => {
 
   const locations = req.body;
 
-  if (!Array.isArray(locations) || locations.length === 0) {
+  if (!Array.isArray(locations)) {
     return res.status(400).json({ message: "Invalid location data" });
   }
 
   try {
     for (const location of locations) {
       const { vehicleId, lat, lng, tracking, locationName, deliveryLocation, deliveryLocationName, timestamp } = location;
+
+      if (!vehicleId) {
+        return res.status(400).json({ message: "Vehicle ID is required" });
+      }
 
       let vehicle = await Vehicle.findOne({ vehicleId });
 
