@@ -1,4 +1,6 @@
-const API_URL = 'https://cmppl-staging-backend.onrender.com';
+if (typeof API_URL === 'undefined') {
+    const API_URL = 'https://cmppl-staging-backend.onrender.com';
+}
 let lastSyncedTimestamp = 0;
 
 // Check if the browser supports service workers
