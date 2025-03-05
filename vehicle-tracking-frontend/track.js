@@ -54,20 +54,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const { vehicleId, lat, lng, locationName, deliveryLocationName, deliveryLocation } = data;
 
     if (!trackedVehicles[vehicleId]) {
-      return; // Ignore updates for vehicles not being tracked
+      trackedVehicles[vehicleId] = true; // Mark the vehicle as tracked
     }
 
-    if (markers[vehicleId]) {
-      // Update the existing marker position and popup content
-      markers[vehicleId].setLatLng([lat, lng])
-        .setPopupContent(`Vehicle ${vehicleId} - ${locationName}`)
-        .openPopup();
-    } else {
-      // Create a new marker for the vehicle
-      const marker = L.marker([lat, lng]).addTo(map)
+    let marker = markers[vehicleId];
+
+    if (!marker) {
+      marker = L.marker([lat, lng]).addTo(map)
         .bindPopup(`Vehicle ${vehicleId} - ${locationName}`)
         .openPopup();
       markers[vehicleId] = marker;
+    } else {
+      marker.setLatLng([lat, lng])
+        .setPopupContent(`Vehicle ${vehicleId} - ${locationName}`)
+        .openPopup();
     }
 
     const vehicleList = document.getElementById('tracked-vehicles');
@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       const durationMinutes = Math.round(data.eta);
 
+      // Convert duration to days, hours, and minutes
       const days = Math.floor(durationMinutes / (24 * 60));
       const hours = Math.floor((durationMinutes % (24 * 60)) / 60);
       const minutes = durationMinutes % 60;
