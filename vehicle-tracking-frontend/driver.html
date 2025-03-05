@@ -6,28 +6,8 @@
     <title>Driver Location Update</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="background-location.js"></script> <!-- Include the background location script -->
-</head>
-<body>
-
-    <header>
-        <h1>Location Update</h1>
-    </header>
-
-    <section id="driver-page">
-        <h2>Track Your Vehicle</h2>
-        <h3>NOTE: Kindly turn on location access for your mobile.</h3>
-        <input type="text" id="vehicleId" placeholder="e.g MH03T1234">
-        <input type="text" id="deliveryLocation" placeholder="Enter delivery address">
-        <button onclick="startTracking()">Start Tracking</button>
-        <button onclick="stopTracking()">Stop Tracking</button>
-        <p id="status"></p>
-        <p id="location"></p> <!-- Display the location here -->
-    </section>
-
     <script>
         const API_URL = 'https://cmppl-staging-backend.onrender.com';
-        let watchId;
 
         function startTracking() {
             const vehicleId = document.getElementById("vehicleId").value;
@@ -40,7 +20,7 @@
             document.getElementById("status").innerText = "Tracking started...";
 
             if (navigator.geolocation) {
-                watchId = navigator.geolocation.watchPosition(
+                navigator.geolocation.watchPosition(
                     (position) => {
                         const { latitude, longitude } = position.coords;
                         getLocationName(latitude, longitude, vehicleId, deliveryLocation);
@@ -138,6 +118,24 @@
             document.getElementById("status").innerText = "Tracking stopped.";
         }
     </script>
+    <script src="background-location.js"></script> <!-- Include the background location script -->
+</head>
+<body>
+
+    <header>
+        <h1>Location Update</h1>
+    </header>
+
+    <section id="driver-page">
+        <h2>Track Your Vehicle</h2>
+        <h3>NOTE: Kindly turn on location access for your mobile.</h3>
+        <input type="text" id="vehicleId" placeholder="e.g MH03T1234">
+        <input type="text" id="deliveryLocation" placeholder="Enter delivery address">
+        <button onclick="startTracking()">Start Tracking</button>
+        <button onclick="stopTracking()">Stop Tracking</button>
+        <p id="status"></p>
+        <p id="location"></p> <!-- Display the location here -->
+    </section>
 
 </body>
 </html>
