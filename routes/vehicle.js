@@ -7,7 +7,7 @@ const axios = require('axios');
 router.post("/update-location", async (req, res) => {
   console.log(`[${new Date().toISOString()}] Received Data:`, req.body);
 
-  const locations = req.body;
+  const { locations } = req.body;
 
   if (!Array.isArray(locations)) {
     return res.status(400).json({ message: "Invalid location data" });
