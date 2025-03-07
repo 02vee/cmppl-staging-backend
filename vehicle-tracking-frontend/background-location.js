@@ -30,7 +30,7 @@ async function syncLocations() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(locations),
+        body: JSON.stringify({ locations }), // Updated payload structure
       });
 
       if (response.ok) {
