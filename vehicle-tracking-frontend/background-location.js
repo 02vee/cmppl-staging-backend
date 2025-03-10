@@ -1,4 +1,3 @@
-const API_URL = 'https://cmppl-staging-backend.onrender.com';
 let lastSyncedTimestamp = 0;
 
 // Check if the browser supports service workers
@@ -30,7 +29,7 @@ async function syncLocations() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ locations }), // Updated payload structure
+        body: JSON.stringify({ locations })
       });
 
       if (response.ok) {
