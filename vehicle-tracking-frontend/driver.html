@@ -6,6 +6,7 @@
     <title>Driver Location Update</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="background-location.js"></script> <!-- Include the background location script -->
     <script>
         const API_URL = 'https://cmppl-staging-backend.onrender.com';
 
@@ -96,13 +97,15 @@
 
         function sendLocation(vehicleId, lat, lng, locationName, deliveryLocation, deliveryLocationName) {
             axios.post(`${API_URL}/api/vehicle/update-location`, {
-                vehicleId,
-                lat,
-                lng,
-                locationName,
-                deliveryLocation,
-                deliveryLocationName,
-                tracking: true  // Send the tracking value as true
+                locations: [{ // Wrap data inside locations array
+                    vehicleId,
+                    lat,
+                    lng,
+                    locationName,
+                    deliveryLocation,
+                    deliveryLocationName,
+                    tracking: true  // Send the tracking value as true
+                }]
             })
             .then(response => {
                 console.log("Location updated successfully:", response.data);
@@ -120,7 +123,6 @@
             document.getElementById("status").innerText = "Tracking stopped.";
         }
     </script>
-    <script src="background-location.js"></script> <!-- Include the background location script -->
 </head>
 <body>
 
