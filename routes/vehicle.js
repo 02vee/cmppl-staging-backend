@@ -17,8 +17,8 @@ router.post("/update-location", async (req, res) => {
     for (const location of locations) {
       const { vehicleId, lat, lng, tracking, locationName, deliveryLocation, deliveryLocationName, timestamp } = location;
 
-      if (!vehicleId) {
-        return res.status(400).json({ message: "Vehicle ID is required" });
+      if (!vehicleId || !lat || !lng || !timestamp) {
+        return res.status(400).json({ message: "Missing required fields" });
       }
 
       let vehicle = await Vehicle.findOne({ vehicleId });
