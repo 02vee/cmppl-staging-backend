@@ -37,7 +37,8 @@ async function syncLocations() {
         localStorage.removeItem('locations');
         console.log('Locations synced successfully');
       } else {
-        console.error('Failed to sync locations:', response.statusText);
+        const responseData = await response.json();
+        console.error('Failed to sync locations:', response.statusText, responseData);
       }
     } catch (error) {
       console.error('Error syncing locations:', error);
@@ -51,6 +52,7 @@ function startBackgroundLocationTracking() {
     navigator.geolocation.watchPosition(
       (position) => {
         const location = {
+          vehicleId: 'h', // Assuming 'h' is the vehicleId for background tracking
           lat: position.coords.latitude,
           lng: position.coords.longitude,
           timestamp: new Date().toISOString(),
