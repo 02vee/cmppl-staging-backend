@@ -72,7 +72,7 @@ function startBackgroundLocationTracking() {
       {
         enableHighAccuracy: true,
         maximumAge: 10000,
-        timeout: 20000, // Increased timeout to 20 seconds
+        timeout: 60000, // Increased timeout to 60 seconds
       }
     );
   } else {
