@@ -104,7 +104,8 @@
                     locationName,
                     deliveryLocation,
                     deliveryLocationName,
-                    tracking: true  // Send the tracking value as true
+                    tracking: true,  // Send the tracking value as true
+                    timestamp: new Date().toISOString()
                 }]
             })
             .then(response => {
