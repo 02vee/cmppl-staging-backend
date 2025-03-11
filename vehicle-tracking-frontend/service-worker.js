@@ -1,3 +1,5 @@
+importScripts('https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/idb-keyval-iife.min.js');
+
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing.');
   self.skipWaiting();
