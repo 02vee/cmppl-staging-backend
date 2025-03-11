@@ -13,7 +13,7 @@
         let watchId;
 
         function startTracking() {
-            const vehicleId = document.getElementById("vehicleId").value;
+            vehicleId = document.getElementById("vehicleId").value;
             const deliveryLocation = document.getElementById("deliveryLocation").value;
             if (!vehicleId || !deliveryLocation) {
                 alert("Please enter your vehicle number plate and delivery address.");
@@ -21,6 +21,7 @@
             }
 
             document.getElementById("status").innerText = "Tracking started...";
+            trackingEnabled = true; // Enable tracking
 
             if (navigator.geolocation) {
                 watchId = navigator.geolocation.watchPosition(
@@ -121,6 +122,7 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
+            trackingEnabled = false; // Disable tracking
             document.getElementById("status").innerText = "Tracking stopped.";
         }
     </script>
