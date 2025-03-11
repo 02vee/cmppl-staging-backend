@@ -1,148 +1,152 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Driver Location Update</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="background-location.js"></script> <!-- Include the background location script -->
-    <script>
-        const API_URL = 'https://cmppl-staging-backend.onrender.com';
+let lastSyncedTimestamp = 0;
+let trackingEnabled = false; // Flag to check if tracking is enabled
+let vehicleId = null; // Store vehicleId once it's set
 
-        let watchId;
+// Ensure that IndexedDB is available
+if (!window.indexedDB) {
+  console.error("Your browser doesn't support a stable version of IndexedDB.");
+}
 
-        function startTracking() {
-            vehicleId = document.getElementById("vehicleId").value;
-            const deliveryLocation = document.getElementById("deliveryLocation").value;
-            if (!vehicleId || !deliveryLocation) {
-                alert("Please enter your vehicle number plate and delivery address.");
-                return;
-            }
+const idbKeyval = {
+  get(key) {
+    return new Promise((resolve) => {
+      const request = indexedDB.open('keyval-store', 1);
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('keyval', 'readonly');
+        const store = tx.objectStore('keyval');
+        const getRequest = store.get(key);
+        getRequest.onsuccess = () => resolve(getRequest.result);
+      };
+    });
+  },
+  set(key, val) {
+    return new Promise((resolve) => {
+      const request = indexedDB.open('keyval-store', 1);
+      request.onupgradeneeded = () => {
+        request.result.createObjectStore('keyval');
+      };
+      request.onsuccess = () => {
+        const db = request.result;
+        const tx = db.transaction('keyval', 'readwrite');
+        const store = tx.objectStore('keyval');
+        store.put(val, key);
+        tx.oncomplete = () => resolve();
+      };
+    });
+  },
+};
 
-            document.getElementById("status").innerText = "Tracking started...";
-            trackingEnabled = true; // Enable tracking
+// Register the service worker
+if ('serviceWorker' in navigator && 'SyncManager' in window) {
+  navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+    console.log('Service Worker registered with scope:', registration.scope);
+  }).catch((error) => {
+    console.error('Service Worker registration failed:', error);
+  });
+}
 
-            if (navigator.geolocation) {
-                watchId = navigator.geolocation.watchPosition(
-                    (position) => {
-                        const { latitude, longitude } = position.coords;
-                        getLocationName(latitude, longitude, vehicleId, deliveryLocation);
-                    },
-                    (error) => {
-                        console.error("Error getting location:", error);
-                        document.getElementById("status").innerText = "Location access denied!";
-                        handleLocationError(error);
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        maximumAge: 0,
-                        timeout: 60000 // Increased timeout to 60 seconds
-                    }
-                );
-            } else {
-                console.error('Geolocation is not supported by this browser');
-                document.getElementById("status").innerText = "Geolocation is not supported by this browser!";
-            }
+// Function to store location data locally
+function storeLocationLocally(location) {
+  idbKeyval.get('locations').then((locations) => {
+    locations = locations || [];
+    locations.push(location);
+    idbKeyval.set('locations', JSON.stringify(locations));
+  });
+}
+
+// Function to sync stored locations with the server
+async function syncLocations() {
+  const locations = JSON.parse(await idbKeyval.get('locations')) || [];
+
+  if (locations.length > 0 && trackingEnabled && vehicleId) {
+    try {
+      const response = await fetch(`${API_URL}/api/vehicle/update-location`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ locations }),
+      });
+
+      if (response.ok) {
+        // Clear stored locations after successful sync
+        await idbKeyval.set('locations', JSON.stringify([]));
+        console.log('Locations synced successfully');
+      } else {
+        const responseData = await response.json();
+        console.error('Failed to sync locations:', response.statusText, responseData);
+      }
+    } catch (error) {
+      console.error('Error syncing locations:', error);
+    }
+  }
+}
+
+// Function to start background location tracking
+function startBackgroundLocationTracking() {
+  if ('geolocation' in navigator) {
+    navigator.geolocation.watchPosition(
+      (position) => {
+        if (trackingEnabled && vehicleId) {
+          const location = {
+            vehicleId: vehicleId,
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            timestamp: new Date().toISOString(),
+          };
+
+          // Store location locally
+          storeLocationLocally(location);
+
+          // Register background sync
+          navigator.serviceWorker.ready.then((registration) => {
+            return registration.sync.register('syncLocationUpdates');
+          }).catch((error) => {
+            console.error('Sync registration failed:', error);
+          });
+
+          // Sync locations with the server if online
+          if (navigator.onLine && Date.now() - lastSyncedTimestamp > 60000) { // Sync every 60 seconds
+            syncLocations();
+            lastSyncedTimestamp = Date.now();
+          }
         }
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        handleLocationError(error);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 10000,
+        timeout: 60000, // Increased timeout to 60 seconds
+      }
+    );
+  } else {
+    console.error('Geolocation is not supported by this browser.');
+  }
+}
 
-        function handleLocationError(error) {
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("User denied the request for Geolocation.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("Location information is unavailable.");
-                    break;
-                case error.TIMEOUT:
-                    alert("The request to get user location timed out.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("An unknown error occurred.");
-                    break;
-            }
-        }
+function handleLocationError(error) {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      alert('User denied the request for Geolocation.');
+      break;
+    case error.POSITION_UNAVAILABLE:
+      alert('Location information is unavailable.');
+      break;
+    case error.TIMEOUT:
+      alert('The request to get user location timed out.');
+      break;
+    case error.UNKNOWN_ERROR:
+      alert('An unknown error occurred.');
+      break;
+  }
+}
 
-        function getLocationName(lat, lng, vehicleId, deliveryLocation) {
-            // Fetch location name using reverse geocoding API
-            axios.get(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                .then(response => {
-                    const locationName = response.data.address.city || response.data.address.town || response.data.address.village || "Unknown Location";
-                    document.getElementById("location").innerText = `Vehicle is in ${locationName}`;
-                    geocodeDeliveryLocation(vehicleId, lat, lng, locationName, deliveryLocation);
-                })
-                .catch(error => {
-                    console.error("Error getting location name:", error);
-                    document.getElementById("status").innerText = "Error fetching location name!";
-                });
-        }
+// Sync locations when the device goes online
+window.addEventListener('online', syncLocations);
 
-        function geocodeDeliveryLocation(vehicleId, lat, lng, locationName, deliveryLocation) {
-            // Use Nominatim API to convert the delivery address to latitude and longitude
-            axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${deliveryLocation}`)
-                .then(response => {
-                    if (response.data.length > 0) {
-                        const deliveryLat = response.data[0].lat;
-                        const deliveryLng = response.data[0].lon;
-                        const deliveryLocationName = response.data[0].display_name;
-                        sendLocation(vehicleId, lat, lng, locationName, `${deliveryLat},${deliveryLng}`, deliveryLocationName);
-                    } else {
-                        document.getElementById("status").innerText = "Delivery location not found!";
-                    }
-                })
-                .catch(error => {
-                    console.error("Error geocoding delivery location:", error);
-                    document.getElementById("status").innerText = "Error geocoding delivery location!";
-                });
-        }
-
-        function sendLocation(vehicleId, lat, lng, locationName, deliveryLocation, deliveryLocationName) {
-            axios.post(`${API_URL}/api/vehicle/update-location`, {
-                locations: [{ // Wrap data inside locations array
-                    vehicleId,
-                    lat,
-                    lng,
-                    locationName,
-                    deliveryLocation,
-                    deliveryLocationName,
-                    tracking: true,  // Send the tracking value as true
-                    timestamp: new Date().toISOString()
-                }]
-            })
-            .then(response => {
-                console.log("Location updated successfully:", response.data);
-            })
-            .catch(error => {
-                console.error("Error updating location:", error);
-            });
-        }
-
-        function stopTracking() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            trackingEnabled = false; // Disable tracking
-            document.getElementById("status").innerText = "Tracking stopped.";
-        }
-    </script>
-</head>
-<body>
-
-    <header>
-        <h1>Location Update</h1>
-    </header>
-
-    <section id="driver-page">
-        <h2>Track Your Vehicle</h2>
-        <h3>NOTE: Kindly turn on location access for your mobile.</h3>
-        <input type="text" id="vehicleId" placeholder="e.g MH03T1234">
-        <input type="text" id="deliveryLocation" placeholder="Enter delivery address">
-        <button onclick="startTracking()">Start Tracking</button>
-        <button onclick="stopTracking()">Stop Tracking</button>
-        <p id="status"></p>
-        <p id="location"></p> <!-- Display the location here -->
-    </section>
-
-</body>
-</html>
+// Start background location tracking when the script is loaded
+startBackgroundLocationTracking();
