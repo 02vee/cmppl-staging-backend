@@ -1,22 +1,20 @@
 self.addEventListener('install', (event) => {
-  console.log('Service Worker installed');
+  console.log('Service Worker installing.');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker activated');
-  return self.clients.claim();
+  console.log('Service Worker activating.');
 });
 
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-locations') {
-    event.waitUntil(syncLocations());
+  if (event.tag === 'syncLocationUpdates') {
+    event.waitUntil(syncLocationUpdates());
   }
 });
 
-async function syncLocations() {
-  const locations = JSON.parse(localStorage.getItem('locations')) || [];
-
+async function syncLocationUpdates() {
+  const locations = JSON.parse(await idbKeyval.get('locations')) || [];
   if (locations.length > 0) {
     try {
       const response = await fetch(`${API_URL}/api/vehicle/update-location`, {
@@ -24,15 +22,16 @@ async function syncLocations() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(locations),
+        body: JSON.stringify({ locations }),
       });
 
       if (response.ok) {
         // Clear stored locations after successful sync
-        localStorage.removeItem('locations');
+        await idbKeyval.set('locations', JSON.stringify([]));
         console.log('Locations synced successfully');
       } else {
-        console.error('Failed to sync locations:', response.statusText);
+        const responseData = await response.json();
+        console.error('Failed to sync locations:', response.statusText, responseData);
       }
     } catch (error) {
       console.error('Error syncing locations:', error);
