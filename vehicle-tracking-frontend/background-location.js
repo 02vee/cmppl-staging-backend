@@ -11,6 +11,10 @@ const idbKeyval = {
   get(key) {
     return new Promise((resolve) => {
       const request = indexedDB.open('keyval-store', 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        db.createObjectStore('keyval');
+      };
       request.onsuccess = () => {
         const db = request.result;
         const tx = db.transaction('keyval', 'readonly');
@@ -24,7 +28,8 @@ const idbKeyval = {
     return new Promise((resolve) => {
       const request = indexedDB.open('keyval-store', 1);
       request.onupgradeneeded = () => {
-        request.result.createObjectStore('keyval');
+        const db = request.result;
+        db.createObjectStore('keyval');
       };
       request.onsuccess = () => {
         const db = request.result;
