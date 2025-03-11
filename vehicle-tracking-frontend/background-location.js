@@ -1,4 +1,6 @@
 let lastSyncedTimestamp = 0;
+let trackingEnabled = false; // Flag to check if tracking is enabled
+let vehicleId = null; // Store vehicleId once it's set
 
 // Check if the browser supports service workers
 if ('serviceWorker' in navigator) {
@@ -22,7 +24,7 @@ function storeLocationLocally(location) {
 async function syncLocations() {
   const locations = JSON.parse(localStorage.getItem('locations')) || [];
 
-  if (locations.length > 0) {
+  if (locations.length > 0 && trackingEnabled && vehicleId) {
     try {
       const response = await fetch(`${API_URL}/api/vehicle/update-location`, {
         method: 'POST',
@@ -51,20 +53,22 @@ function startBackgroundLocationTracking() {
   if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(
       (position) => {
-        const location = {
-          vehicleId: 'h', // Assuming 'h' is the vehicleId for background tracking
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          timestamp: new Date().toISOString(),
-        };
+        if (trackingEnabled && vehicleId) {
+          const location = {
+            vehicleId: vehicleId, 
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            timestamp: new Date().toISOString(),
+          };
 
-        // Store location locally
-        storeLocationLocally(location);
+          // Store location locally
+          storeLocationLocally(location);
 
-        // Sync locations with the server if online
-        if (navigator.onLine && Date.now() - lastSyncedTimestamp > 60000) { // Sync every 60 seconds
-          syncLocations();
-          lastSyncedTimestamp = Date.now();
+          // Sync locations with the server if online
+          if (navigator.onLine && Date.now() - lastSyncedTimestamp > 60000) { // Sync every 60 seconds
+            syncLocations();
+            lastSyncedTimestamp = Date.now();
+          }
         }
       },
       (error) => {
@@ -98,9 +102,6 @@ function handleLocationError(error) {
       break;
   }
 }
-
-// Start background location tracking
-startBackgroundLocationTracking();
 
 // Sync locations when the device goes online
 window.addEventListener('online', syncLocations);
