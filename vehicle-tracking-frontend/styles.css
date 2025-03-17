@@ -157,6 +157,10 @@ header {
     color: #34495e;
 }
 
+#driver-page h3 {
+    color: #c60000;
+}
+
 #driver-page input[type="text"] {
     width: 100%;
     padding: 10px;

@@ -6,28 +6,14 @@
     <title>Driver Location Update</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-</head>
-<body>
-
-    <header>
-        <h1>Driver Location Update</h1>
-    </header>
-
-    <section id="driver-page">
-        <h2>Track Your Vehicle</h2>
-        <input type="text" id="vehicleId" placeholder="e.g MH03T1234">
-        <input type="text" id="deliveryLocation" placeholder="Enter delivery address">
-        <button onclick="startTracking()">Start Tracking</button>
-        <button onclick="stopTracking()">Stop Tracking</button>
-        <p id="status"></p>
-        <p id="location"></p> <!-- Display the location here -->
-    </section>
-
+    <script src="background-location.js"></script> <!-- Include the background location script -->
     <script>
+        const API_URL = 'https://cmppl-staging-backend.onrender.com';
+
         let watchId;
 
         function startTracking() {
-            const vehicleId = document.getElementById("vehicleId").value;
+            vehicleId = document.getElementById("vehicleId").value;
             const deliveryLocation = document.getElementById("deliveryLocation").value;
             if (!vehicleId || !deliveryLocation) {
                 alert("Please enter your vehicle number plate and delivery address.");
@@ -35,6 +21,7 @@
             }
 
             document.getElementById("status").innerText = "Tracking started...";
+            trackingEnabled = true; // Enable tracking
 
             if (navigator.geolocation) {
                 watchId = navigator.geolocation.watchPosition(
@@ -45,16 +32,34 @@
                     (error) => {
                         console.error("Error getting location:", error);
                         document.getElementById("status").innerText = "Location access denied!";
+                        handleLocationError(error);
                     },
                     {
                         enableHighAccuracy: true,
                         maximumAge: 0,
-                        timeout: 5000
+                        timeout: 60000 // Increased timeout to 60 seconds
                     }
                 );
             } else {
                 console.error('Geolocation is not supported by this browser');
                 document.getElementById("status").innerText = "Geolocation is not supported by this browser!";
+            }
+        }
+
+        function handleLocationError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
             }
         }
 
@@ -93,13 +98,16 @@
 
         function sendLocation(vehicleId, lat, lng, locationName, deliveryLocation, deliveryLocationName) {
             axios.post(`${API_URL}/api/vehicle/update-location`, {
-                vehicleId,
-                lat,
-                lng,
-                locationName,
-                deliveryLocation,
-                deliveryLocationName,
-                tracking: true  // Send the tracking value as true
+                locations: [{ // Wrap data inside locations array
+                    vehicleId,
+                    lat,
+                    lng,
+                    locationName,
+                    deliveryLocation,
+                    deliveryLocationName,
+                    tracking: true,  // Send the tracking value as true
+                    timestamp: new Date().toISOString()
+                }]
             })
             .then(response => {
                 console.log("Location updated successfully:", response.data);
@@ -114,9 +122,27 @@
                 navigator.geolocation.clearWatch(watchId);
                 watchId = null;
             }
+            trackingEnabled = false; // Disable tracking
             document.getElementById("status").innerText = "Tracking stopped.";
         }
     </script>
+</head>
+<body>
+
+    <header>
+        <h1>Location Update</h1>
+    </header>
+
+    <section id="driver-page">
+        <h2>Track Your Vehicle</h2>
+        <h3>NOTE: Kindly turn on location access for your mobile.</h3>
+        <input type="text" id="vehicleId" placeholder="e.g MH03T1234">
+        <input type="text" id="deliveryLocation" placeholder="Enter delivery address">
+        <button onclick="startTracking()">Start Tracking</button>
+        <button onclick="stopTracking()">Stop Tracking</button>
+        <p id="status"></p>
+        <p id="location"></p> <!-- Display the location here -->
+    </section>
 
 </body>
 </html>

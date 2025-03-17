@@ -7,20 +7,6 @@ let trackedVehicles = {};
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Track.js loaded successfully');
 
-  // Request location access as soon as the page loads
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('Location access granted');
-      },
-      (error) => {
-        console.error('Location access denied', error);
-      }
-    );
-  } else {
-    console.error('Geolocation is not supported by this browser');
-  }
-
   const initializeSocket = () => {
     if (!socket) {
       console.log('Initializing socket connection');
@@ -68,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const { vehicleId, lat, lng, locationName, deliveryLocationName, deliveryLocation } = data;
 
     if (!trackedVehicles[vehicleId]) {
-      return; // Ignore updates for vehicles not being tracked
+      trackedVehicles[vehicleId] = true; // Mark the vehicle as tracked
     }
 
     let marker = markers[vehicleId];
@@ -101,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const calculateETA = async (currentLat, currentLng, deliveryLocation, etaElement) => {
-    // Convert the delivery location into lat, lng
     const deliveryCoords = deliveryLocation.split(',').map(coord => parseFloat(coord.trim()));
     const [deliveryLat, deliveryLng] = deliveryCoords;
 
@@ -177,17 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const data = await response.json();
 
-        // Clear the input field and set the placeholder
         document.getElementById('vehicle-number').value = '';
         document.getElementById('vehicle-number').placeholder = 'Enter any vehicle number';
 
         if (response.status === 404) {
-          // Display specific error message if vehicle is not found
           alert('Vehicle not found. Please enter a correct number.');
         } else if (data.message === 'Tracking started') {
           trackedVehicles[vehicleNumber] = true;
           console.log(`Tracking started for vehicle ${vehicleNumber}`);
-          // Manually trigger a vehicle update to ensure the UI is updated immediately
           updateVehicleLocation({
             vehicleId: vehicleNumber,
             lat: data.lat,
