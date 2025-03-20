@@ -9,7 +9,7 @@ if (!window.indexedDB) {
 
 const idbKeyval = {
   get(key) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const request = indexedDB.open('keyval-store', 1);
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
@@ -23,11 +23,13 @@ const idbKeyval = {
         const store = tx.objectStore('keyval');
         const getRequest = store.get(key);
         getRequest.onsuccess = () => resolve(getRequest.result);
+        getRequest.onerror = () => reject(getRequest.error);
       };
+      request.onerror = () => reject(request.error);
     });
   },
   set(key, val) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const request = indexedDB.open('keyval-store', 1);
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
@@ -41,7 +43,9 @@ const idbKeyval = {
         const store = tx.objectStore('keyval');
         store.put(val, key);
         tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
       };
+      request.onerror = () => reject(request.error);
     });
   },
 };
@@ -129,7 +133,7 @@ function startBackgroundLocationTracking() {
       {
         enableHighAccuracy: true,
         maximumAge: 10000,
-        timeout: 60000, // Increased timeout to 60 seconds
+        timeout: 120000, // Increased timeout to 120 seconds
       }
     );
   } else {
