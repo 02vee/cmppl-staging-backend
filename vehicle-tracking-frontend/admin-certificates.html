@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Manage Certificates</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Manage Certificates</h1>
+    <nav>
+      <ul>
+        <li><a href="admin.html">Admin Dashboard</a></li>
+        <li><a href="index.html" onclick="logout()">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <section id="folders">
+      <h2>Folders</h2>
+      <button onclick="createFolder()">Create Folder</button>
+      <ul id="folders-list"></ul>
+    </section>
+    <section id="files">
+      <h2>Files</h2>
+      <input type="file" id="upload-file">
+      <button onclick="uploadFile()">Upload File</button>
+      <ul id="files-list"></ul>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2025 ALCCOFINE</p>
+  </footer>
+  <script src="admin-certificates.js"></script>
+</body>
+</html>
