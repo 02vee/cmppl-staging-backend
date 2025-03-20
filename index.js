@@ -38,7 +38,7 @@ const sessionMiddleware = session({
   saveUninitialized: false,
   store: MongoStore.create({ mongoUrl: MONGO_URI }),  // Store sessions in MongoDB Atlas
   cookie: {
-    secure: false,  // Set to false for testing, true for production with HTTPS
+    secure: process.env.NODE_ENV === 'production',  // Set to true for production with HTTPS
     httpOnly: true,
     sameSite: 'Lax',  // Required for cross-origin cookies
   },
@@ -98,6 +98,15 @@ app.get('/admin', (req, res) => {
 
 app.get('/login', (req, res) => {
   res.redirect('/login.html');
+});
+
+// --- Serve Certificates Page ---
+app.get('/certificates.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'vehicle-tracking-frontend', 'certificates.html'));
+});
+
+app.get('/certificates', (req, res) => {
+  res.redirect('/certificates.html');
 });
 
 // --- Socket.IO Connection ---
