@@ -7,7 +7,8 @@ const session = require("express-session");
 const path = require("path");
 const vehicleRoutes = require("./routes/vehicle");
 const authRoutes = require("./routes/auth");
-const certificateRoutes = require("./routes/certificate");
+const folderRoutes = require('./routes/folderRoutes');
+const fileRoutes = require('./routes/fileRoutes');
 const MongoStore = require("connect-mongo");
 require("dotenv").config();
 
@@ -66,7 +67,8 @@ app.set("io", io);
 app.use(express.json());
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/auth", authRoutes); 
-app.use("/api/certificate", certificateRoutes);
+app.use('/api/folders', folderRoutes);
+app.use('/api/files', fileRoutes);
 
 // --- Serve Static Files (Frontend) ---
 app.use(express.static(path.join(__dirname, 'vehicle-tracking-frontend')));
