@@ -1,0 +1,3 @@
+[submodule "cmppl-staging-backend"]
+	path = cmppl-staging-backend
+	url = https://github.com/02vee/cmppl-staging-backend.git
